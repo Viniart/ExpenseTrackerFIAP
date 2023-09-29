@@ -1,6 +1,4 @@
 import 'package:expense_tracker/models/tipo_transacao.dart';
-import 'package:expense_tracker/pages/contas_page.dart';
-import 'package:expense_tracker/pages/detalhes_page.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -8,19 +6,13 @@ import '../models/transacao.dart';
 
 class TransacaoItem extends StatelessWidget {
   final Transacao transacao;
-  const TransacaoItem({Key? key, required this.transacao}) : super(key: key);
+  final void Function()? onTap;
+  const TransacaoItem({Key? key, required this.transacao, this.onTap})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () => {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => DetalhesPage(
-                      transacao: transacao,
-                    )))
-      },
       leading: CircleAvatar(
         backgroundColor: transacao.categoria.cor,
         child: Icon(
@@ -40,6 +32,7 @@ class TransacaoItem extends StatelessWidget {
                 ? Colors.pink
                 : Colors.green),
       ),
+      onTap: onTap,
     );
   }
 }

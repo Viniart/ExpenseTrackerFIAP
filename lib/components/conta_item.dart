@@ -1,6 +1,7 @@
-import 'package:expense_tracker/models/banco.dart';
-import 'package:expense_tracker/models/conta.dart';
 import 'package:flutter/material.dart';
+
+import '../models/banco.dart';
+import '../models/conta.dart';
 
 class ContaItem extends StatelessWidget {
   final Conta conta;
@@ -10,12 +11,10 @@ class ContaItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: CircleAvatar(
-          backgroundImage:
-              AssetImage('images/${banksMap[conta.bancoId]?.logo}')),
-      title: Text(
-        conta.descricao,
+        backgroundImage: AssetImage('images/${bancosMap[conta.bancoId]?.logo}'),
       ),
-      subtitle: Text(banksMap[conta.bancoId]?.nome ?? ''),
+      title: Text(conta.descricao),
+      subtitle: Text(bancosMap[conta.bancoId]?.nome ?? ''),
     );
   }
 }

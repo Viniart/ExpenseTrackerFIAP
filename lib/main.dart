@@ -1,9 +1,22 @@
+import 'package:expense_tracker/pages/conta_cadastro_page.dart';
 import 'package:expense_tracker/pages/home_page.dart';
+import 'package:expense_tracker/pages/login_page.dart';
+import 'package:expense_tracker/pages/registar_page.dart';
+import 'package:expense_tracker/pages/transacao_cadastro_page.dart';
+import 'package:expense_tracker/pages/transacao_detalhes_page.dart';
 
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://buqbsdpdwodrumknhohp.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1cWJzZHBkd29kcnVta25ob2hwIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTU5ODYxODksImV4cCI6MjAxMTU2MjE4OX0.ggngLlUtYr2wPWoIv6coSrfIo2U2rIXQcD7vl9fkjxQ',
+  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -21,6 +34,11 @@ class MyApp extends StatelessWidget {
       ),
       routes: {
         "/": (context) => const HomePage(),
+        "/login": (context) => const LoginPage(),
+        "/registrar": (context) => const RegistrarPage(),
+        "/transacao-detalhes": (context) => const TransacaoDetalhesPage(),
+        "/transacao-cadastro": (context) => const TransacaoCadastroPage(),
+        "/conta-cadastro": (context) => const ContaCadastroPage(),
       },
       initialRoute: "/",
     );
