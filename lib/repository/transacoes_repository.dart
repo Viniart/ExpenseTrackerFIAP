@@ -1,48 +1,68 @@
-import 'package:expense_tracker/models/conta.dart';
-import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import '../models/categoria.dart';
 import '../models/tipo_transacao.dart';
 import '../models/transacao.dart';
 
 class TransacoesReepository {
   Future<List<Transacao>> listarTransacoes(
-      {TipoTransacao? tipoTransacao}) async {
-    final supabase = Supabase.instance;
-    final rows = await supabase.client
-        .from('transacoes')
-        .select<List<Map<String, dynamic>>>('''
+      {required String userId, TipoTransacao? tipoTransacao}) async {
+    final supabase = Supabase.instance.client;
+
+    var query =
+        supabase.from('transacoes').select<List<Map<String, dynamic>>>('''
             *,
-            contas(*),
-            categorias(*)
+            categorias (
+              *
+            ),
+            contas (
+              *
+            )
+            ''').eq('user_id', userId);
 
-          ''');
+    if (tipoTransacao != null) {
+      query = query.eq('tipo_transacao', tipoTransacao.index);
+    }
 
-    final transacoes = rows.map((row) {
-      final categoria = row['categorias'];
-      final conta = row['contas'];
+    var data = await query;
 
-      return Transacao(
-          id: row['id'],
-          descricao: row['descricao'],
-          tipoTransacao: TipoTransacao.values[row['tipo_transacao']],
-          valor: row['valor'],
-          data: DateTime.parse(row['data_transacao']),
-          categoria: Categoria(
-              id: categoria['id'],
-              descricao: categoria['descricao'],
-              cor: Color(categoria['cor']),
-              icone: IoniconsData(categoria['icone']),
-              tipoTransacao: TipoTransacao.values[categoria['tipo_transacao']]),
-          conta: Conta(
-              id: conta['id'],
-              bancoId: conta['banco'],
-              descricao: conta['descricao'],
-              tipoConta: TipoConta.values[conta['tipo_conta']]));
+    final list = data.map((map) {
+      return Transacao.fromMap(map);
     }).toList();
 
-    return transacoes;
+    return list;
+  }
+
+  Future cadastrarTransacao(Transacao transacao) async {
+    final supabase = Supabase.instance.client;
+
+    await supabase.from('transacoes').insert({
+      'descricao': transacao.descricao,
+      'user_id': transacao.userId,
+      'tipo_transacao': transacao.tipoTransacao.index,
+      'valor': transacao.valor,
+      'data_transacao': transacao.data.toIso8601String(),
+      'detalhes': transacao.detalhes,
+      'categoria_id': transacao.categoria.id,
+      'conta_id': transacao.conta.id,
+    });
+  }
+
+  Future alterarTransacao(Transacao transacao) async {
+    final supabase = Supabase.instance.client;
+
+    await supabase.from('transacoes').update({
+      'descricao': transacao.descricao,
+      'tipo_transacao': transacao.tipoTransacao.index,
+      'valor': transacao.valor,
+      'data_transacao': transacao.data.toIso8601String(),
+      'detalhes': transacao.detalhes,
+      'categoria_id': transacao.categoria.id,
+      'conta_id': transacao.conta.id,
+    }).match({'id': transacao.id});
+  }
+
+  Future excluirTransacao(int id) async {
+    final supabase = Supabase.instance.client;
+
+    await supabase.from('transacoes').delete().match({'id': id});
   }
 }

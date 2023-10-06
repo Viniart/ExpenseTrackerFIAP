@@ -1,11 +1,12 @@
 import 'package:expense_tracker/repository/auth_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RegistrarPage extends StatefulWidget {
   const RegistrarPage({Key? key}) : super(key: key);
 
   @override
-  _RegistrarPageState createState() => _RegistrarPageState();
+  State<RegistrarPage> createState() => _RegistrarPageState();
 }
 
 class _RegistrarPageState extends State<RegistrarPage> {
@@ -109,6 +110,7 @@ class _RegistrarPageState extends State<RegistrarPage> {
         if (senha != senhaController.text) {
           return "As senhas não coincidem";
         }
+        return null;
       },
       obscureText: true,
       decoration: const InputDecoration(
@@ -180,16 +182,14 @@ class _RegistrarPageState extends State<RegistrarPage> {
   void onTapBtnSignUp() {
     if (_key.currentState!.validate()) {
       final repo = AuthRepository();
-      repo
-          .registrar(emailController.text, senhaController.text)
-          .then((sucesso) {
-        if (sucesso) {
-          Navigator.pushReplacementNamed(context, "/home");
-        } else {
-          _exibirMensagem("E-mail já cadastrado");
-        }
+      repo.registrar(emailController.text, senhaController.text).then((_) {
+        Navigator.pushReplacementNamed(context, "/login");
       }).catchError((e) {
-        _exibirMensagem(e.toString());
+        if (e is AuthException) {
+          _exibirMensagem("Falha na autenticação: ${e.message}");
+        } else {
+          _exibirMensagem("Ocorreu um erro inesperado: ${e.toString()}");
+        }
       });
     }
   }

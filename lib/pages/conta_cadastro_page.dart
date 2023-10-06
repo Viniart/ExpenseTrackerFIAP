@@ -1,33 +1,49 @@
-import 'package:expense_tracker/components/categoria_select.dart';
-import 'package:expense_tracker/models/categoria.dart';
-import 'package:expense_tracker/models/tipo_transacao.dart';
 import 'package:expense_tracker/pages/bancos_select_page.dart';
-import 'package:expense_tracker/pages/categorias_select_page.dart';
-import 'package:expense_tracker/pages/contas_select_page.dart';
+import 'package:expense_tracker/repository/contas_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_masked_text2/flutter_masked_text2.dart';
-import 'package:intl/intl.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../components/banco_select.dart';
-import '../components/conta_select.dart';
 import '../models/banco.dart';
 import '../models/conta.dart';
 
 class ContaCadastroPage extends StatefulWidget {
-  const ContaCadastroPage({super.key});
+  final Conta? contaParaEdicao;
+
+  const ContaCadastroPage({super.key, this.contaParaEdicao});
 
   @override
   State<ContaCadastroPage> createState() => _ContaCadastroPageState();
 }
 
 class _ContaCadastroPageState extends State<ContaCadastroPage> {
+  User? user;
+
+  Conta? conta;
+  final contasRepository = ContasRepository();
+
   final descricaoController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
   Banco? bancoSelecionado;
   TipoConta tipoContaSelecionada = TipoConta.contaCorrente;
+
+  @override
+  void initState() {
+
+    user = Supabase.instance.client.auth.currentUser;
+
+    final conta = widget.contaParaEdicao;
+
+    if(conta != null) {
+
+    }
+    
+    super.initState();
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +72,20 @@ class _ContaCadastroPageState extends State<ContaCadastroPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _cadastrarConta(Conta conta) async {
+    final scaffold = ScaffoldMessenger.of(context);
+
+    await contasRepository.cadastrarConta(conta).then((value) {
+      scaffold.showSnackBar(SnackBar(
+        content: Text(
+          '${transacao.tipoTransacao == TipoTransacao.receita ? 'Receita' : 'Despesa'} cadastrada com sucesso',
+        ),
+      ));
+      Navigator.of(context).pop(true);
+    });
+
   }
 
   BancoSelect _buildBancoSelect() {
@@ -130,9 +160,19 @@ class _ContaCadastroPageState extends State<ContaCadastroPage> {
         onPressed: () {
           final isValid = _formKey.currentState!.validate();
           if (isValid) {
-            final descricao = descricaoController.text;
 
-            print(descricao);
+            final userId = user?.id ?? '';
+
+            final conta = Conta(id: 0, userId: userId, bancoId: bancoSelecionado!.id, descricao: descricaoController.text, tipoConta: tipoContaSelecionada);
+
+            if (widget.contaParaEdicao == null) {
+              await _(transacao);
+            } else {
+              transacao.id = widget.transacaoParaEdicao!.id;
+              await _alterarTransacao(transacao);
+            }
+
+
           }
         },
         child: const Text('Cadastrar'),
